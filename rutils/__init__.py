@@ -570,3 +570,25 @@ class UTCDateTime(types.TypeDecorator):
                     return value.replace(tzinfo=utc_zone)
                 return value.replace(tzinfo=local_zone).astimezone(tz=utc_zone)
             return value.astimezone(tz=utc_zone)
+
+
+class ImmutableAttrDict(dict):
+    """Once defined, these attributes cannot be changed. It is used
+    for wrapping configuration data struct"""
+    def __init__(self, mapping=None):
+        super(ImmutableAttrDict, self).__init__()
+        if mapping is not None:
+            s = super(ImmutableAttrDict, self).__setitem__
+            for key, value in list(mapping.items()):
+                s(key, value)
+
+    def __setitem__(self, key, value):
+        raise RuntimeError('You cannot do that')
+
+    def __getattr__(self, item):
+        try:
+            return self.__getitem__(item)
+        except KeyError:
+            raise AttributeError(item)
+
+    __setattr__ = __setitem__
