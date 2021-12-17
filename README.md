@@ -1,3 +1,6 @@
 # ProjectUtils
 
-Common libraries for projects, the project was bootstrapped from https://github.com/adsabs/ADSPipelineUtils (where I was the main author)
+Set of common utilities for my projects.
+
+# Credits
+ootstrapped from https://github.com/adsabs/ADSPipelineUtils

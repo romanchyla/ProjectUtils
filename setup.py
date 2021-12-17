@@ -1,50 +1,51 @@
+# mimic presence of 'setupy.py' - by reading config from pyproject.toml
+
+# we are using ppsetuptools to read values and pass them to setup()
+# however we also have to deal with idiosyncracies of ppsetuptools
+# and of flint (which doesn't want to allow any entry inside
+# [project.entry-points.console_scripts])
+
+import inspect
 import os
-from subprocess import Popen, PIPE
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from distutils.core import setup, find_packages
+# important to import before importing ppsetuptools
+import setuptools
+import toml
 
-try:
-    import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-    long_description = ""
-
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+orig_setup = setuptools.setup
 
 
-def get_git_version(default="0.0.1"):
+def monkey(*args, **kwargs):
+    del kwargs["license_files"]
+    del kwargs["keywords"]
+
     try:
-        p = Popen(['git', 'describe', '--tags'], stdout=PIPE, stderr=PIPE)
-        p.stderr.close()
-        line = p.stdout.readlines()[0]
-        line = line.strip()
-        return line.decode()
-    except:
-        return default
+        caller_directory = os.path.abspath(os.path.dirname(inspect.stack()[1].filename))
+        if not os.path.exists(os.path.join(caller_directory, "pyproject.toml")):
+            raise
+    except:  # noqa: E722
+        caller_directory = "."
 
-setup(
-    name='rutils',
-    version=get_git_version(default="0.0.1"),
-    classifiers=['Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.7'],
-    url='https://github.com/romanchyla/ProjectUtils',
-    license='MIT',
-    author="rc",
-    description='Common library for projects',
-    long_description=long_description,
-    packages=find_packages(),
-    include_package_data=True,
-    zip_safe=False,
-    platforms='any',
-    install_requires=required,
-    #entry_points={
-    #      'kombu.serializers': [
-    #          'adsmsg = rutils.serializer:register_args'
-    #      ]
-    #  }
-  )
+    with open(os.path.join(caller_directory, "pyproject.toml"), "r") as pptoml:
+        pyproject_toml = pptoml.read()
+        if isinstance(pyproject_toml, bytes):
+            pyproject_toml = pyproject_toml.decode("utf-8")
+
+    data = toml.loads(pyproject_toml)
+
+    if "xsetup" in data:
+        for key, value in data["xsetup"].items():
+            if key not in kwargs or not kwargs[key]:
+                kwargs[key] = value
+
+    print("monkey patched setuptools, going to call setup() with those kwargs:")
+    print("\n".join([str(x) for x in sorted(kwargs.items())]))
+
+    orig_setup(*args, **kwargs)
+    # raise ("To see values; for testing purposes")
+
+
+setuptools.setup = monkey
+import ppsetuptools  # noqa: E402
+
+ppsetuptools.setup()
