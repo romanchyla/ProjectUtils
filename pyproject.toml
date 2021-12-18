@@ -52,19 +52,6 @@ dev = [
     'pytest-cookies==0.6.1',
     'semantic-release==0.1.0',
 ]
-
-# see setup.py for explanation of these
-[xsetup.entry_points]
-console_scripts = [
-    "run=run:cli",
-    "rtool=rtool:cli"
-]
-[xsetup]
-scripts = [
-]
-
-
-
 docs = [
     'Sphinx==4.3.1',
     'myst-parser==0.15.2',
@@ -99,3 +86,15 @@ line-length = 99 # override black's default line-length
 [build-system]
 requires = ["setuptools >= 58.6.0", "wheel", "flit_core >=3.2,<4", "ppsetuptools==2.0.2"]
 build-backend = "flit_core.buildapi"
+
+
+# see setup.py for explanation of these
+[xsetup.entry_points]
+console_scripts = [
+    "run=run:cli",
+    "rtool=rtool:cli"
+]
+[xsetup]
+scripts = [
+]
+
