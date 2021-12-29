@@ -51,25 +51,44 @@ def _get_proj_home(extra_frames=0):
     """Get the location of the caller module; then go up max_levels until
     finding requirements.txt"""
 
+    def swimup(start):
+        x = start
+        max_level = 3
+        while max_level:
+            f = os.path.abspath(os.path.join(x, "requirements.txt"))
+            p = os.path.abspath(os.path.join(x, "pyproject.toml"))
+            if os.path.exists(f) or os.path.exists(p):
+                return x
+            x = os.path.abspath(os.path.join(x, ".."))
+            max_level -= 1
+
+    # first try with the current cwd
+    proj_home = swimup(os.getcwd())
+    if proj_home:
+        return proj_home
+    else:
+        sys.stderr.write(
+            "Couldn't identify project root from: {}. Going to inspect stackframe next".format(
+                os.getcwd()
+            )
+        )
+
     frame = inspect.stack()[2 + extra_frames]
     module = inspect.getsourcefile(frame[0])
     if not module:
         raise Exception(
             "Sorry, wasnt able to guess your location. Let devs know about this issue."
         )
+
     d = os.path.dirname(module)
-    x = d
-    max_level = 3
-    while max_level:
-        f = os.path.abspath(os.path.join(x, "requirements.txt"))
-        p = os.path.abspath(os.path.join(x, "pyproject.toml"))
-        if os.path.exists(f) or os.path.exists(p):
-            return x
-        x = os.path.abspath(os.path.join(x, ".."))
-        max_level -= 1
-    sys.stderr.write(
-        "Sorry, cant find the proj home; returning the location of the caller: %s\n" % d
-    )
+    proj_home = swimup(d)
+
+    if proj_home:
+        return proj_home
+    else:
+        sys.stderr.write(
+            "Sorry, cant find the proj home; returning the location of the caller: %s\n" % d
+        )
     return d
 
 
@@ -317,9 +336,7 @@ class ProjectWorker(object):
         proj_home = None
         if "proj_home" in kwargs:
             proj_home = kwargs.pop("proj_home")
-        self._config = load_config(
-            extra_frames=1, proj_home=proj_home, app_name=app_name
-        )
+        self._config = load_config(extra_frames=1, proj_home=proj_home, app_name=app_name)
 
         local_config = None
         if "local_config" in kwargs and kwargs["local_config"]:
@@ -454,9 +471,7 @@ class JsonFormatter(jsonlogger.JsonFormatter, object):
     ):
         self._extra = extra
         self.use_color = use_color
-        jsonlogger.JsonFormatter.__init__(
-            self, fmt=fmt, datefmt=datefmt, *args, **kwargs
-        )
+        jsonlogger.JsonFormatter.__init__(self, fmt=fmt, datefmt=datefmt, *args, **kwargs)
 
     def process_log_record(self, log_record):
         # Enforce the presence of a timestamp
@@ -547,9 +562,7 @@ def u2asc(input):
         try:
             input = input.decode("utf-8")
         except UnicodeDecodeError:
-            raise UnicodeHandlerError(
-                "Input must be either unicode or encoded in utf8."
-            )
+            raise UnicodeHandlerError("Input must be either unicode or encoded in utf8.")
 
     try:
         output = unidecode.unidecode(input)
@@ -601,6 +614,7 @@ class UTCDateTime(types.TypeDecorator):
 class ImmutableAttrDict(dict):
     """Once defined, these attributes cannot be changed. It is used
     for wrapping configuration data struct"""
+
     def __init__(self, mapping=None):
         super(ImmutableAttrDict, self).__init__()
         if mapping is not None:
@@ -609,7 +623,7 @@ class ImmutableAttrDict(dict):
                 s(key, value)
 
     def __setitem__(self, key, value):
-        raise RuntimeError('You cannot do that')
+        raise RuntimeError("You cannot do that")
 
     def __getattr__(self, item):
         try:
