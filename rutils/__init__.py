@@ -24,7 +24,6 @@ import requests
 import unidecode
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from dateutil import parser, tz
-from kombu.utils.encoding import safe_str
 from past.builtins import basestring
 from pythonjsonlogger import jsonlogger
 from sqlalchemy import TIMESTAMP, create_engine, types
