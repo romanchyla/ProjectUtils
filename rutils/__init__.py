@@ -30,7 +30,7 @@ from sqlalchemy import TIMESTAMP, create_engine, types
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from .exceptions import UnicodeHandlerError
-from .term import colored
+from .term import colored, safe_str
 
 local_zone = tz.tzlocal()
 utc_zone = tz.tzutc()

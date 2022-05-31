@@ -53,9 +53,9 @@ Ready to contribute? Here's how to set yourself up for local development.
 3.  Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
 
     ```shell
-    $ mkvirtualenv rutils
-    $ cd rutils/
-    $ python setup.py develop
+    $ virtualenv .venv
+    $ source .venv/bin/activate
+    $ pip install -e .
     ```
 
 4.  Create a branch for local development:
@@ -71,10 +71,9 @@ Ready to contribute? Here's how to set yourself up for local development.
     ```shell
     $ flake8 rutils tests
     $ pytest
-    $ tox
     ```
 
-    To get flake8 and tox, pip install them into your virtualenv.
+    To get flake8 and pytest, `pip install .[dev]` them into your virtualenv.
 
 6.  Commit your changes and push your branch to GitHub:
 
@@ -92,7 +91,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1.  The pull request should include tests.
 2.  If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in README.rst.
-3.  The pull request should work for Python 3.6, 3.7 and 3.8. Check the build and make sure that the tests pass for all supported Python versions.
+3.  The pull request should work for Python 3.8 and newer. Check the build and make sure that the tests pass for all supported Python versions.
 
 ## Tips
 
@@ -104,4 +103,7 @@ $ pytest tests
 
 ## Making a new release
 
+```shell
+semantic-release
+```
 The deployment should be automated and can be triggered from the Semantic Release workflow in Github. The next version will be based on [the commit logs](https://python-semantic-release.readthedocs.io/en/latest/commit-log-parsing.html#commit-log-parsing). This is done by [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/index.html) via a Github action.

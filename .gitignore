@@ -145,3 +145,5 @@ workdir/
 logs/
 .docs/
 local_config
+**/.DS_Store
+*.idea
