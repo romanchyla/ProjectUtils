@@ -100,7 +100,6 @@ scripts = [
 
 [xsetup.entry_points]
 console_scripts = [
-    "run=run:cli",
-    "rtool=rtool:cli",
+    "rutils=rutils.cli:cli",
 ]
 
