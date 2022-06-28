@@ -36,6 +36,7 @@ local_zone = tz.tzlocal()
 utc_zone = tz.tzutc()
 
 TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S.%fZ"
+TIMESTAMP_YMT = "%Y-%m-%d"
 
 
 def _set_json_formatter(logger, colorize=False):
@@ -126,7 +127,7 @@ def get_date(timestr=None):
     return date
 
 
-def date2solrstamp(t):
+def date2stamp(t, fmt=TIMESTAMP_FMT):
     """
     Received datetime object and returns it formatted the way that
     SOLR likes (variation on the ISO format).
@@ -135,6 +136,8 @@ def date2solrstamp(t):
     @return: string
     """
 
+    if fmt == "simple":
+        return t.strftime(TIMESTAMP_YMT)
     return t.strftime(TIMESTAMP_FMT)
 
 
