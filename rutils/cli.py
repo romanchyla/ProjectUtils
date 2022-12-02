@@ -101,8 +101,18 @@ def jupyter_start():
         "{}.jupyterbook".format(os.path.basename(config["PROJ_HOME"])),
         "-it",
         "--rm",
+        "--user",
+        "root",
+        "-e",
+        "GRANT_SUDO=true",
+        "-e",
+        "NB_UMASK=0016",
         "-v",
-        "{}:/home/jovyan/workspace".format(jupyhome),
+        "{}:/home/jovyan/work".format(jupyhome),
+        "-v",
+        "{}:/home/jovyan/proj:ro".format(
+            config["PROJ_HOME"],
+        ),
         "-p",
         "{}:8888".format(jupyport),
         "rprojc.jupyterbook:latest",
@@ -132,15 +142,33 @@ def rebuild_image():
         cmd = [
             "docker",
             "build",
-            ".",
+            rutilshome,
             "--tag",
-            "rprojc.jupyterbook",
+            "rprojc.jupyterbook.base",
             "-f",
             "{}/Dockerfile.jupyterbook".format(rutilshome),
         ]
         p = run_cmd(cmd)
         if p.returncode != 0:
             raise Exception("Failed: {}".format(p.stderr))
+
+        os.chdir(curhome)
+        if os.path.exists("./Dockerfile.jupyterbook"):
+            p = run_cmd(
+                [
+                    "docker",
+                    "build",
+                    curhome,
+                    "--tag",
+                    "rprojc.jupyterbook",
+                    "-f",
+                    "{}/Dockerfile.jupyterbook".format(curhome),
+                ]
+            )
+        else:
+            p = run_cmd(["docker", "tag", "rprojc.jupyterbook.base", "rprojc.jupyterbook"])
+        if p.returncode != 0:
+            raise Exception("Failed to build/tag final version of rprojc.jupyterbook")
     finally:
         os.chdir(curhome)
 
