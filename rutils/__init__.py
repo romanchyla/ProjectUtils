@@ -138,6 +138,8 @@ def date2stamp(t, fmt=TIMESTAMP_FMT):
 
     if fmt == "simple":
         return t.strftime(TIMESTAMP_YMT)
+    elif fmt:
+        return t.strftime(fmt)
     return t.strftime(TIMESTAMP_FMT)
 
 
@@ -227,7 +229,7 @@ def load_module(filename):
     return res
 
 
-def setup_logging(name_, level=None, proj_home=None, attach_stdout=False):
+def setup_logging(name_, level=None, proj_home=None, attach_stdout=False, console_level=None):
     """
     Sets up generic logging to file with rotating files on disk
 
@@ -280,6 +282,13 @@ def setup_logging(name_, level=None, proj_home=None, attach_stdout=False):
 
     # Do not propagate to the parent logger to avoid double logging with different formatters
     logging_instance.propagate = False
+
+    if console_level:
+        console = logging.StreamHandler()
+        console.setLevel(console_level)
+        formatter = logging.Formatter("%(levelname)-8s %(message)s")
+        console.setFormatter(formatter)
+        logging_instance.addHandler(console)
 
     return logging_instance
 
@@ -351,6 +360,7 @@ class ProjectWorker(object):
             proj_home=proj_home,
             level=self._config.get("LOGGING_LEVEL", "INFO"),
             attach_stdout=self._config.get("LOG_STDOUT", False),
+            console_level=self._config.get("CONSOLE_LOGGING_LEVEL", None),
         )
 
         self._engine = self._session = None
